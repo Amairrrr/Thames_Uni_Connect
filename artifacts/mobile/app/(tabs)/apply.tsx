@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -15,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useEnquiries } from "@/hooks/useEnquiries";
 
 const COUNTRIES = [
   "India", "Pakistan", "Bangladesh", "Nepal", "Sri Lanka", "Afghanistan",
@@ -37,14 +39,14 @@ const COURSES = [
   "MRes / DBA / PhD / 2nd Master",
 ];
 
-type SelectModalProps = {
+type SelectFieldProps = {
   label: string;
   value: string;
   options: string[];
   onSelect: (v: string) => void;
 };
 
-function SelectField({ label, value, options, onSelect }: SelectModalProps) {
+function SelectField({ label, value, options, onSelect }: SelectFieldProps) {
   const colors = useColors();
   const [open, setOpen] = useState(false);
 
@@ -89,6 +91,7 @@ export default function ApplyScreen() {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : 0;
+  const { addEnquiry } = useEnquiries();
 
   const [country, setCountry] = useState("");
   const [destination, setDestination] = useState("");
@@ -96,16 +99,23 @@ export default function ApplyScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const isValid = country && destination && course && name.trim().length > 1 && phone.trim().length > 5;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValid) {
       Alert.alert("Missing Information", "Please fill in all fields before submitting.");
       return;
     }
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      await addEnquiry({ name: name.trim(), phone: phone.trim(), country, destination, course });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -129,6 +139,15 @@ export default function ApplyScreen() {
           Our advisors will be in touch within 24 hours. Monday – Saturday, 9am – 7pm GMT.
         </Text>
         <Text style={[styles.successName, { color: colors.textMid }]}>Thank you, {name}!</Text>
+
+        <Pressable
+          onPress={() => router.push("/enquiries")}
+          style={[styles.trackerBtn, { backgroundColor: colors.navy }]}
+        >
+          <Feather name="bar-chart-2" size={16} color="#fff" />
+          <Text style={styles.trackerBtnText}>Track My Application</Text>
+        </Pressable>
+
         <Pressable
           onPress={handleWhatsApp}
           style={[styles.waBtn, { backgroundColor: "#25D366" }]}
@@ -200,15 +219,16 @@ export default function ApplyScreen() {
         {/* Submit */}
         <Pressable
           onPress={handleSubmit}
+          disabled={submitting}
           style={[
             styles.submitBtn,
             { backgroundColor: isValid ? colors.navy : colors.muted },
           ]}
         >
           <Text style={[styles.submitText, { color: isValid ? "#fff" : colors.textSoft }]}>
-            Submit Enquiry
+            {submitting ? "Saving…" : "Submit Enquiry"}
           </Text>
-          <Feather name="arrow-right" size={16} color={isValid ? "#fff" : colors.textSoft} />
+          {!submitting && <Feather name="arrow-right" size={16} color={isValid ? "#fff" : colors.textSoft} />}
         </Pressable>
         <Text style={[styles.formNote, { color: colors.textSoft }]}>
           Our advisors are available Monday – Saturday, 9am – 7pm (GMT).
@@ -216,7 +236,7 @@ export default function ApplyScreen() {
 
         {/* WhatsApp alternative */}
         <View style={[styles.divider, { borderTopColor: colors.border }]}>
-          <Text style={[styles.dividerText, { color: colors.textSoft }]}>or connect directly</Text>
+          <Text style={[styles.dividerText, { color: colors.textSoft, backgroundColor: colors.background }]}>or connect directly</Text>
         </View>
         <Pressable
           onPress={() => Linking.openURL("https://wa.me/447359854658")}
@@ -225,7 +245,7 @@ export default function ApplyScreen() {
           <Feather name="message-circle" size={18} color="#25D366" />
           <View>
             <Text style={[styles.waAltTitle, { color: "#166534" }]}>Chat on WhatsApp</Text>
-            <Text style={[styles.waAltSub, { color: "#4ADE80" }]}>+44 7359 854658</Text>
+            <Text style={[styles.waAltSub, { color: "#16A34A" }]}>+44 7359 854658</Text>
           </View>
           <Feather name="external-link" size={14} color="#4ADE80" style={{ marginLeft: "auto" }} />
         </Pressable>
@@ -343,7 +363,6 @@ const styles = StyleSheet.create({
   dividerText: {
     fontSize: 12,
     marginTop: -8,
-    backgroundColor: "#fff",
     paddingHorizontal: 12,
   },
   waAlt: {
@@ -390,7 +409,23 @@ const styles = StyleSheet.create({
   successName: {
     fontSize: 15,
     fontWeight: "600",
-    marginBottom: 32,
+    marginBottom: 28,
+  },
+  trackerBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 10,
+    width: "100%",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  trackerBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
   },
   waBtn: {
     flexDirection: "row",

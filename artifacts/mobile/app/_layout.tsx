@@ -23,22 +23,11 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="services"
-        options={{ headerShown: false, presentation: "card" }}
-      />
-      <Stack.Screen
-        name="destinations"
-        options={{ headerShown: false, presentation: "card" }}
-      />
-      <Stack.Screen
-        name="about"
-        options={{ headerShown: false, presentation: "card" }}
-      />
-      <Stack.Screen
-        name="blog"
-        options={{ headerShown: false, presentation: "card" }}
-      />
+      <Stack.Screen name="services" options={{ headerShown: false, presentation: "card" }} />
+      <Stack.Screen name="destinations" options={{ headerShown: false, presentation: "card" }} />
+      <Stack.Screen name="about" options={{ headerShown: false, presentation: "card" }} />
+      <Stack.Screen name="blog" options={{ headerShown: false, presentation: "card" }} />
+      <Stack.Screen name="enquiries" options={{ headerShown: false, presentation: "card" }} />
     </Stack>
   );
 }

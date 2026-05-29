@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import React from "react";
 import {
   Animated,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -15,46 +16,59 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useEnquiries } from "@/hooks/useEnquiries";
 
 const MENU_ITEMS = [
+  {
+    icon: "bar-chart-2" as const,
+    label: "My Enquiries",
+    desc: "Track your application progress",
+    route: "/enquiries",
+    color: "#0F2D5E",
+    badge: true,
+  },
   {
     icon: "list" as const,
     label: "Our Services",
     desc: "8-step end-to-end support process",
     route: "/services",
-    color: "#0F2D5E",
+    color: "#1B4080",
+    badge: false,
   },
   {
     icon: "globe" as const,
     label: "Study Destinations",
     desc: "UK, USA, Canada, Australia & more",
     route: "/destinations",
-    color: "#1B4080",
+    color: "#2563EB",
+    badge: false,
   },
   {
     icon: "info" as const,
     label: "About Us",
     desc: "British Council certified, based in London",
     route: "/about",
-    color: "#2563EB",
+    color: "#059669",
+    badge: false,
   },
   {
     icon: "file-text" as const,
     label: "Resources & Blog",
     desc: "Guides, visa info, and student tips",
     route: "/blog",
-    color: "#059669",
+    color: "#7C3AED",
+    badge: false,
   },
 ];
 
 const LINKS = [
   { icon: "shield" as const, label: "UK Student Visa", url: "https://www.gov.uk/student-visa", color: "#DC2626" },
-  { icon: "shield" as const, label: "Graduate Route Visa", url: "https://www.gov.uk/graduate-visa", color: "#7C3AED" },
+  { icon: "trending-up" as const, label: "Graduate Route Visa", url: "https://www.gov.uk/graduate-visa", color: "#7C3AED" },
   { icon: "book-open" as const, label: "UCAS Application Guide", url: "https://www.ucas.com/undergraduate/applying-to-university", color: "#D97706" },
   { icon: "activity" as const, label: "NHS Health Surcharge", url: "https://www.gov.uk/healthcare-immigration-application/how-much-pay", color: "#059669" },
 ];
 
-function MenuItem({ item }: { item: typeof MENU_ITEMS[0] }) {
+function MenuItem({ item, badgeCount }: { item: typeof MENU_ITEMS[0]; badgeCount?: number }) {
   const colors = useColors();
   const scale = React.useRef(new Animated.Value(1)).current;
 
@@ -80,6 +94,11 @@ function MenuItem({ item }: { item: typeof MENU_ITEMS[0] }) {
           <Text style={[styles.menuLabel, { color: colors.navy }]}>{item.label}</Text>
           <Text style={[styles.menuDesc, { color: colors.textSoft }]}>{item.desc}</Text>
         </View>
+        {badgeCount !== undefined && badgeCount > 0 && (
+          <View style={[styles.badge, { backgroundColor: colors.gold }]}>
+            <Text style={[styles.badgeText, { color: colors.navy }]}>{badgeCount}</Text>
+          </View>
+        )}
         <Feather name="chevron-right" size={16} color={colors.textSoft} />
       </Animated.View>
     </Pressable>
@@ -91,6 +110,7 @@ export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : 0;
+  const { enquiries } = useEnquiries();
 
   return (
     <ScrollView
@@ -98,24 +118,33 @@ export default function MoreScreen() {
       contentContainerStyle={{ paddingBottom: bottomPad + 32 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 20, backgroundColor: colors.cream }]}>
-        <View style={[styles.certBadge, { backgroundColor: "rgba(212,150,58,0.12)", borderColor: "rgba(212,150,58,0.3)" }]}>
-          <Feather name="award" size={14} color={colors.gold} />
-          <Text style={[styles.certBadgeText, { color: colors.gold }]}>BRITISH COUNCIL CERTIFIED</Text>
-        </View>
-        <Text style={[styles.headerTitle, { color: colors.navy }]}>Thames Uni Connect</Text>
-        <Text style={[styles.headerSub, { color: colors.textSoft }]}>
-          A British Council certified education consultancy based in London, UK.
-          Free end-to-end support from your first enquiry through to career guidance.
+      {/* Header with logo */}
+      <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: colors.cream, borderBottomColor: colors.border }]}>
+        <Image
+          source={require("@/assets/images/logo.jpg")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={[styles.tagline, { color: colors.textSoft }]}>
+          Bridging Students and Futures
         </Text>
+        <View style={[styles.certBadge, { backgroundColor: "rgba(212,150,58,0.12)", borderColor: "rgba(212,150,58,0.3)" }]}>
+          <Feather name="award" size={13} color={colors.gold} />
+          <Text style={[styles.certBadgeText, { color: colors.gold }]}>BRITISH COUNCIL CERTIFIED · LONDON, UK</Text>
+        </View>
       </View>
 
       {/* Menu */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.navy }]}>Explore</Text>
         <View style={styles.menuList}>
-          {MENU_ITEMS.map((item) => <MenuItem key={item.label} item={item} />)}
+          {MENU_ITEMS.map((item) => (
+            <MenuItem
+              key={item.label}
+              item={item}
+              badgeCount={item.badge ? enquiries.length : undefined}
+            />
+          ))}
         </View>
       </View>
 
@@ -158,36 +187,37 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 20,
+    alignItems: "center",
+    borderBottomWidth: 1,
+  },
+  logo: {
+    width: 200,
+    height: 80,
+    marginBottom: 6,
+  },
+  tagline: {
+    fontSize: 12,
+    fontStyle: "italic",
+    marginBottom: 12,
   },
   certBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    alignSelf: "flex-start",
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 20,
     borderWidth: 1,
-    marginBottom: 14,
   },
   certBadgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "700",
     letterSpacing: 0.8,
   },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  headerSub: {
-    fontSize: 13,
-    lineHeight: 20,
-  },
   section: {
     paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingTop: 20,
     paddingBottom: 8,
   },
   sectionTitle: {
@@ -224,6 +254,18 @@ const styles = StyleSheet.create({
   menuDesc: {
     fontSize: 11,
   },
+  badge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
   linkRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -234,7 +276,7 @@ const styles = StyleSheet.create({
   },
   contactCard: {
     padding: 24,
-    marginTop: 20,
+    marginTop: 16,
     marginBottom: 8,
     alignItems: "center",
   },

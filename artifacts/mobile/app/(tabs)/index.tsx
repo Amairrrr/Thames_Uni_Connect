@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React, { useRef } from "react";
 import {
   Animated,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -87,7 +88,16 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Hero */}
-      <View style={[styles.hero, { paddingTop: topPad + 24, backgroundColor: colors.navy }]}>
+      <View style={[styles.hero, { paddingTop: topPad + 16, backgroundColor: colors.navy }]}>
+        {/* Logo */}
+        <View style={styles.logoWrap}>
+          <Image
+            source={require("@/assets/images/logo.jpg")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
         <View style={styles.badge}>
           <MaterialIcons name="verified" size={14} color={colors.gold} />
           <Text style={[styles.badgeText, { color: colors.gold }]}>BRITISH COUNCIL CERTIFIED · LONDON, UK</Text>
@@ -183,7 +193,7 @@ export default function HomeScreen() {
         </PressableCard>
         <Pressable onPress={openWhatsApp} style={styles.waBtn}>
           <Feather name="message-circle" size={16} color="#25D366" />
-          <Text style={[styles.waBtnText]}>Chat on WhatsApp</Text>
+          <Text style={styles.waBtnText}>Chat on WhatsApp</Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -194,6 +204,18 @@ const styles = StyleSheet.create({
   hero: {
     paddingHorizontal: 20,
     paddingBottom: 32,
+  },
+  logoWrap: {
+    alignItems: "center",
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  logo: {
+    width: 220,
+    height: 72,
   },
   badge: {
     flexDirection: "row",
@@ -214,10 +236,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   heroTitle: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: "700",
     color: "#FFFFFF",
-    lineHeight: 42,
+    lineHeight: 40,
     marginBottom: 14,
   },
   heroSub: {
