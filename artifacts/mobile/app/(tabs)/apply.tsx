@@ -249,6 +249,17 @@ export default function ApplyScreen() {
           </View>
           <Feather name="external-link" size={14} color="#4ADE80" style={{ marginLeft: "auto" }} />
         </Pressable>
+        <Pressable
+          onPress={() => Linking.openURL("mailto:admin@thamesuniconnect.com")}
+          style={[styles.waAlt, { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE", marginTop: 8 }]}
+        >
+          <Feather name="mail" size={18} color="#2563EB" />
+          <View>
+            <Text style={[styles.waAltTitle, { color: "#1E40AF" }]}>Send an Email</Text>
+            <Text style={[styles.waAltSub, { color: "#3B82F6" }]}>admin@thamesuniconnect.com</Text>
+          </View>
+          <Feather name="external-link" size={14} color="#93C5FD" style={{ marginLeft: "auto" }} />
+        </Pressable>
       </View>
     </ScrollView>
   );

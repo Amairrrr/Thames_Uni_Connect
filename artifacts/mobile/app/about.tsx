@@ -91,6 +91,13 @@ export default function AboutScreen() {
         >
           <Text style={[styles.contactBtnOutlineText, { color: "rgba(255,255,255,0.8)" }]}>Book Free Consultation</Text>
         </Pressable>
+        <Pressable
+          onPress={() => Linking.openURL("mailto:admin@thamesuniconnect.com")}
+          style={[styles.contactBtnOutline, { marginTop: 0 }]}
+        >
+          <Feather name="mail" size={14} color="rgba(255,255,255,0.8)" style={{ marginRight: 8 }} />
+          <Text style={[styles.contactBtnOutlineText, { color: "rgba(255,255,255,0.8)" }]}>admin@thamesuniconnect.com</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );

@@ -179,6 +179,13 @@ export default function MoreScreen() {
           <Feather name="message-circle" size={16} color="#fff" />
           <Text style={styles.contactBtnText}>WhatsApp: +44 7359 854658</Text>
         </Pressable>
+        <Pressable
+          onPress={() => Linking.openURL("mailto:admin@thamesuniconnect.com")}
+          style={[styles.contactBtnEmail, { borderColor: "rgba(255,255,255,0.25)" }]}
+        >
+          <Feather name="mail" size={16} color="rgba(255,255,255,0.85)" />
+          <Text style={styles.contactBtnEmailText}>admin@thamesuniconnect.com</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );
@@ -305,5 +312,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 14,
+  },
+  contactBtnEmail: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    width: "100%",
+    justifyContent: "center",
+    marginTop: 8,
+    borderWidth: 1.5,
+  },
+  contactBtnEmailText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
