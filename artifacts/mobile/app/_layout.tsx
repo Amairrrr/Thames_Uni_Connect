@@ -6,7 +6,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -14,20 +14,39 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useAuth } from "@/hooks/useAuth";
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+function AuthGate() {
+  const { isRegistered, loading } = useAuth();
+
+  if (loading) return null;
+  if (!isRegistered) return <Redirect href="/signup" />;
+  return null;
+}
+
 function RootLayoutNav() {
+  const { isRegistered, loading } = useAuth();
+
+  if (loading) return null;
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="services" options={{ headerShown: false, presentation: "card" }} />
-      <Stack.Screen name="destinations" options={{ headerShown: false, presentation: "card" }} />
-      <Stack.Screen name="about" options={{ headerShown: false, presentation: "card" }} />
-      <Stack.Screen name="blog" options={{ headerShown: false, presentation: "card" }} />
-      <Stack.Screen name="enquiries" options={{ headerShown: false, presentation: "card" }} />
+      {!isRegistered ? (
+        <Stack.Screen name="signup" options={{ headerShown: false, gestureEnabled: false }} />
+      ) : (
+        <>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="services" options={{ headerShown: false, presentation: "card" }} />
+          <Stack.Screen name="destinations" options={{ headerShown: false, presentation: "card" }} />
+          <Stack.Screen name="about" options={{ headerShown: false, presentation: "card" }} />
+          <Stack.Screen name="blog" options={{ headerShown: false, presentation: "card" }} />
+          <Stack.Screen name="enquiries" options={{ headerShown: false, presentation: "card" }} />
+        </>
+      )}
     </Stack>
   );
 }

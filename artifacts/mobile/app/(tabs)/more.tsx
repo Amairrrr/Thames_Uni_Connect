@@ -4,6 +4,7 @@ import * as Linking from "expo-linking";
 import { router } from "expo-router";
 import React from "react";
 import {
+  Alert,
   Animated,
   Image,
   Platform,
@@ -17,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 import { useEnquiries } from "@/hooks/useEnquiries";
+import { useAuth } from "@/hooks/useAuth";
 
 const MENU_ITEMS = [
   {
@@ -111,6 +113,26 @@ export default function MoreScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : 0;
   const { enquiries } = useEnquiries();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out? Your saved enquiries will be removed from this device.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            await logout();
+            router.replace("/signup");
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <ScrollView
@@ -118,8 +140,8 @@ export default function MoreScreen() {
       contentContainerStyle={{ paddingBottom: bottomPad + 32 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header with logo */}
-      <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: colors.cream, borderBottomColor: colors.border }]}>
+      {/* Logo header */}
+      <View style={[styles.logoHeader, { paddingTop: topPad + 16, backgroundColor: colors.cream, borderBottomColor: colors.border }]}>
         <Image
           source={require("@/assets/images/logo-transparent.png")}
           style={styles.logo}
@@ -133,6 +155,28 @@ export default function MoreScreen() {
           <Text style={[styles.certBadgeText, { color: colors.gold }]}>BRITISH COUNCIL CERTIFIED · LONDON, UK</Text>
         </View>
       </View>
+
+      {/* User profile card */}
+      {user && (
+        <View style={[styles.profileCard, { backgroundColor: colors.navy, marginHorizontal: 16, marginTop: 16 }]}>
+          <View style={[styles.profileAvatar, { backgroundColor: colors.gold }]}>
+            <Text style={[styles.profileInitial, { color: colors.navy }]}>
+              {user.name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{user.name}</Text>
+            <Text style={styles.profileEmail}>{user.email}</Text>
+            <View style={[styles.profileCoursePill, { backgroundColor: "rgba(255,255,255,0.1)" }]}>
+              <Feather name="book-open" size={10} color="rgba(255,255,255,0.6)" />
+              <Text style={styles.profileCourse}>{user.courseInterest}</Text>
+            </View>
+          </View>
+          <Pressable onPress={handleLogout} style={styles.signOutBtn} hitSlop={8}>
+            <Feather name="log-out" size={16} color="rgba(255,255,255,0.5)" />
+          </Pressable>
+        </View>
+      )}
 
       {/* Menu */}
       <View style={styles.section}>
@@ -192,7 +236,7 @@ export default function MoreScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
+  logoHeader: {
     paddingHorizontal: 20,
     paddingBottom: 20,
     alignItems: "center",
@@ -221,6 +265,55 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "700",
     letterSpacing: 0.8,
+  },
+  profileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 4,
+  },
+  profileAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileInitial: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  profileInfo: {
+    flex: 1,
+    gap: 3,
+  },
+  profileName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  profileEmail: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.6)",
+  },
+  profileCoursePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginTop: 2,
+  },
+  profileCourse: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.6)",
+  },
+  signOutBtn: {
+    padding: 6,
   },
   section: {
     paddingHorizontal: 16,
