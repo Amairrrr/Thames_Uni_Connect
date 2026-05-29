@@ -15,7 +15,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ReminderBanner } from "@/components/ReminderBanner";
 import { useColors } from "@/hooks/useColors";
+import { useReminders } from "@/hooks/useReminders";
 
 const WHATSAPP_URL = "https://wa.me/447359854658";
 
@@ -52,19 +54,21 @@ const PARTNER_UNIS = [
 function StatCard({ num, label }: { num: string; label: string }) {
   const colors = useColors();
   return (
-    <View style={[styles.statCard, { backgroundColor: "rgba(255,255,255,0.12)", borderColor: "rgba(255,255,255,0.2)" }]}>
+    <View style={[styles.statCard, { backgroundColor: "rgba(255,255,255,0.1)", borderColor: "rgba(255,255,255,0.18)" }]}>
       <Text style={[styles.statNum, { color: colors.gold }]}>{num}</Text>
-      <Text style={[styles.statLabel, { color: "rgba(255,255,255,0.7)" }]}>{label}</Text>
+      <Text style={[styles.statLabel, { color: "rgba(255,255,255,0.65)" }]}>{label}</Text>
     </View>
   );
 }
 
 function PressableCard({ onPress, style, children }: { onPress?: () => void; style?: object; children: React.ReactNode }) {
   const scale = useRef(new Animated.Value(1)).current;
-  const handlePressIn = () => Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 50 }).start();
-  const handlePressOut = () => Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
   return (
-    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 50 }).start()}
+      onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start()}
+    >
       <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>
     </Pressable>
   );
@@ -75,6 +79,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : 0;
+  const { reminders, dismiss } = useReminders();
 
   const openWhatsApp = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -87,22 +92,32 @@ export default function HomeScreen() {
       contentContainerStyle={{ paddingBottom: bottomPad + 32 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Hero */}
-      <View style={[styles.hero, { paddingTop: topPad + 16, backgroundColor: colors.navy }]}>
-        {/* Logo */}
-        <View style={styles.logoWrap}>
-          <Image
-            source={require("@/assets/images/logo.jpg")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+      {/* ── NAV BAR with logo ── */}
+      <View style={[styles.navbar, { paddingTop: topPad, backgroundColor: "#FFFFFF", borderBottomColor: "#E5E7EB" }]}>
+        <Image
+          source={require("@/assets/images/logo-transparent.png")}
+          style={styles.navLogo}
+          resizeMode="contain"
+        />
+        <Pressable
+          onPress={openWhatsApp}
+          style={[styles.navWaBtn, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}
+        >
+          <Feather name="message-circle" size={14} color="#25D366" />
+          <Text style={styles.navWaBtnText}>WhatsApp</Text>
+        </Pressable>
+      </View>
 
+      {/* ── HERO ── */}
+      <View style={[styles.hero, { backgroundColor: colors.navy }]}>
         <View style={styles.badge}>
-          <MaterialIcons name="verified" size={14} color={colors.gold} />
+          <MaterialIcons name="verified" size={13} color={colors.gold} />
           <Text style={[styles.badgeText, { color: colors.gold }]}>BRITISH COUNCIL CERTIFIED · LONDON, UK</Text>
         </View>
-        <Text style={styles.heroTitle}>Your Dream UK University{"\n"}<Text style={{ color: colors.gold }}>Starts Here</Text></Text>
+        <Text style={styles.heroTitle}>
+          Your Dream UK University{"\n"}
+          <Text style={{ color: colors.gold }}>Starts Here</Text>
+        </Text>
         <Text style={styles.heroSub}>
           Expert guidance from a British Council certified consultancy. We cover all UK universities and beyond — from first enquiry through to settling in.
         </Text>
@@ -130,7 +145,12 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Intakes */}
+      {/* ── REMINDER BANNERS ── */}
+      {reminders.map((r) => (
+        <ReminderBanner key={r.id} reminder={r} onDismiss={dismiss} />
+      ))}
+
+      {/* ── INTAKES ── */}
       <View style={[styles.intakesBar, { backgroundColor: "#EFF6FF", borderTopColor: "#2563EB" }]}>
         {INTAKES.map((item) => (
           <View key={item.label} style={styles.intakeItem}>
@@ -143,7 +163,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {/* Trust */}
+      {/* ── TRUST ── */}
       <View style={[styles.trustBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         {TRUST_ITEMS.map((t) => (
           <View key={t} style={styles.trustItem}>
@@ -153,7 +173,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {/* Partner Universities */}
+      {/* ── PARTNER UNIVERSITIES ── */}
       <View style={styles.section}>
         <Text style={[styles.sectionLabel, { color: colors.gold }]}>DIRECT PARTNER UNIVERSITIES</Text>
         <Text style={[styles.sectionTitle, { color: colors.navy }]}>Priority Access, Faster Decisions</Text>
@@ -178,7 +198,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      {/* CTA */}
+      {/* ── CTA ── */}
       <View style={[styles.ctaSection, { backgroundColor: colors.navy }]}>
         <Text style={styles.ctaTitle}>Ready to Begin Your Journey?</Text>
         <Text style={styles.ctaSub}>Our advisors are available Mon–Sat, 9am–7pm GMT</Text>
@@ -201,27 +221,44 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  /* ── Navbar ── */
+  navbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+  },
+  navLogo: {
+    width: 180,
+    height: 58,
+  },
+  navWaBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1.5,
+  },
+  navWaBtnText: {
+    color: "#25D366",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  /* ── Hero ── */
   hero: {
     paddingHorizontal: 20,
-    paddingBottom: 32,
-  },
-  logoWrap: {
-    alignItems: "center",
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  logo: {
-    width: 220,
-    height: 72,
+    paddingTop: 20,
+    paddingBottom: 28,
   },
   badge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginBottom: 18,
+    marginBottom: 16,
     backgroundColor: "rgba(212,150,58,0.15)",
     borderWidth: 1,
     borderColor: "rgba(212,150,58,0.4)",
@@ -236,22 +273,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "700",
     color: "#FFFFFF",
-    lineHeight: 40,
-    marginBottom: 14,
+    lineHeight: 38,
+    marginBottom: 12,
   },
   heroSub: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.72)",
-    lineHeight: 22,
-    marginBottom: 24,
+    fontSize: 13,
+    color: "rgba(255,255,255,0.68)",
+    lineHeight: 21,
+    marginBottom: 22,
   },
   heroActions: {
     flexDirection: "row",
     gap: 10,
-    marginBottom: 28,
+    marginBottom: 24,
     flexWrap: "wrap",
   },
   btnGold: {
@@ -274,7 +311,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.35)",
+    borderColor: "rgba(255,255,255,0.3)",
   },
   btnOutlineText: {
     fontSize: 14,
@@ -294,7 +331,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statNum: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
     marginBottom: 2,
   },
@@ -302,6 +339,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: "center",
   },
+  /* ── Intakes ── */
   intakesBar: {
     paddingVertical: 14,
     paddingHorizontal: 20,
@@ -314,8 +352,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   intakeDot: {
-    width: 10,
-    height: 10,
+    width: 9,
+    height: 9,
     borderRadius: 5,
   },
   intakeLabel: {
@@ -325,6 +363,7 @@ const styles = StyleSheet.create({
   intakeDesc: {
     fontSize: 11,
   },
+  /* ── Trust ── */
   trustBar: {
     paddingVertical: 14,
     paddingHorizontal: 20,
@@ -345,9 +384,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
+  /* ── Section ── */
   section: {
     paddingHorizontal: 20,
-    paddingVertical: 28,
+    paddingVertical: 24,
   },
   sectionLabel: {
     fontSize: 10,
@@ -364,7 +404,7 @@ const styles = StyleSheet.create({
   sectionSub: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   uniGrid: {
     flexDirection: "row",
@@ -399,29 +439,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
   },
+  /* ── CTA ── */
   ctaSection: {
-    paddingVertical: 36,
+    paddingVertical: 32,
     paddingHorizontal: 24,
     alignItems: "center",
   },
   ctaTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
     color: "#fff",
     textAlign: "center",
     marginBottom: 8,
   },
   ctaSub: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.6)",
+    fontSize: 12,
+    color: "rgba(255,255,255,0.55)",
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 22,
   },
   ctaBtn: {
     paddingHorizontal: 28,
     paddingVertical: 14,
     borderRadius: 10,
-    marginBottom: 16,
+    marginBottom: 14,
     width: "100%",
     alignItems: "center",
   },

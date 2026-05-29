@@ -121,7 +121,7 @@ export default function MoreScreen() {
       {/* Header with logo */}
       <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: colors.cream, borderBottomColor: colors.border }]}>
         <Image
-          source={require("@/assets/images/logo.jpg")}
+          source={require("@/assets/images/logo-transparent.png")}
           style={styles.logo}
           resizeMode="contain"
         />
