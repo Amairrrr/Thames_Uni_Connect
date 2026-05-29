@@ -12,6 +12,24 @@ export type UserProfile = {
   registeredAt: string;
 };
 
+async function postToApi(profile: Omit<UserProfile, "registeredAt">) {
+  try {
+    await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        country: profile.country,
+        courseInterest: profile.courseInterest,
+      }),
+    });
+  } catch {
+    // Silently fail — local registration still succeeds
+  }
+}
+
 export function useAuth() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +53,7 @@ export function useAuth() {
     const full: UserProfile = { ...profile, registeredAt: new Date().toISOString() };
     await AsyncStorage.setItem(USER_KEY, JSON.stringify(full));
     setUser(full);
+    postToApi(profile);
   }, []);
 
   const logout = useCallback(async () => {

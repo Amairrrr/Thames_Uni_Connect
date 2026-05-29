@@ -1,0 +1,2 @@
+- [Admin password setup](admin-password.md) — ADMIN_PASSWORD env var set to default; must use X-Admin-Key header for /api/admin/* routes
+- [Zod import in api-server](zod-api-server.md) — esbuild can't resolve "zod/v4"; always import from "zod" in api-server routes

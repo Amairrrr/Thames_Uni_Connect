@@ -8,6 +8,7 @@ export type EnquiryStatus = "pending" | "contacted" | "in_progress" | "completed
 export type Enquiry = {
   id: string;
   name: string;
+  email: string;
   phone: string;
   country: string;
   destination: string;
@@ -15,6 +16,26 @@ export type Enquiry = {
   submittedAt: string;
   status: EnquiryStatus;
 };
+
+async function postEnquiryToApi(enquiry: Enquiry) {
+  try {
+    await fetch("/api/enquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: enquiry.name,
+        email: enquiry.email ?? "",
+        phone: enquiry.phone,
+        country: enquiry.country,
+        destination: enquiry.destination,
+        course: enquiry.course,
+        status: enquiry.status,
+      }),
+    });
+  } catch {
+    // Silently fail — local enquiry still saved
+  }
+}
 
 export function useEnquiries() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -50,6 +71,7 @@ export function useEnquiries() {
       };
       const updated = [enquiry, ...enquiries];
       await save(updated);
+      postEnquiryToApi(enquiry);
       return enquiry;
     },
     [enquiries, save]
