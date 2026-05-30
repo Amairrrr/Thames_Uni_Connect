@@ -360,9 +360,34 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {filteredEnquiries.map((e) => (
-                        <tr key={e.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-4 text-gray-400 font-mono text-xs">#{e.id}</td>
+                      {filteredEnquiries.map((e) => {
+                        const isExpanded = expandedId === e.id;
+                        const draft = draftNotes[e.id] ?? e.notes;
+                        const isDirty = draft !== e.notes;
+                        return (<>
+                        <tr
+                          key={e.id}
+                          className={`transition-colors ${isExpanded ? "bg-blue-50/40" : "hover:bg-gray-50"}`}
+                        >
+                          <td className="px-3 py-4 text-gray-400 font-mono text-xs">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  setExpandedId(isExpanded ? null : e.id);
+                                  if (!isExpanded && draftNotes[e.id] === undefined) {
+                                    setDraftNotes((prev) => ({ ...prev, [e.id]: e.notes }));
+                                  }
+                                }}
+                                className={`w-5 h-5 flex items-center justify-center rounded transition-all ${isExpanded ? "text-[#0F2D5E]" : "text-gray-300 hover:text-gray-500"}`}
+                                title="Show notes"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>
+                                  <path d="M8 5l8 7-8 7V5z"/>
+                                </svg>
+                              </button>
+                              #{e.id}
+                            </div>
+                          </td>
                           <td className="px-5 py-4 font-semibold text-gray-900">
                             <div className="flex items-center gap-2">
                               <div className="w-7 h-7 rounded-full bg-[#D4963A] flex items-center justify-center text-white text-xs font-bold">
@@ -403,7 +428,67 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
                             </button>
                           </td>
                         </tr>
-                      ))}
+                        {isExpanded && (
+                          <tr key={`notes-${e.id}`} className="bg-blue-50/40 border-t-0">
+                            <td colSpan={9} className="px-6 pb-5 pt-0">
+                              <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded bg-[#0F2D5E] flex items-center justify-center">
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                    </div>
+                                    <span className="text-xs font-bold text-[#0F2D5E] uppercase tracking-wide">Internal Notes</span>
+                                    {e.notes && (
+                                      <span className="text-xs text-gray-400">· last saved {fmt(e.updatedAt)}</span>
+                                    )}
+                                    {isDirty && (
+                                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">unsaved</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-400">{draft.length} chars</span>
+                                    <button
+                                      onClick={() => handleSaveNotes(e.id)}
+                                      disabled={savingNotes === e.id || !isDirty}
+                                      className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                                        savedNotes === e.id
+                                          ? "bg-green-100 text-green-700"
+                                          : isDirty
+                                          ? "bg-[#0F2D5E] text-white hover:bg-[#1a3d7a]"
+                                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                      }`}
+                                    >
+                                      {savingNotes === e.id ? (
+                                        <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                      ) : savedNotes === e.id ? (
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                                      ) : (
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H5V5h10v4z"/></svg>
+                                      )}
+                                      {savingNotes === e.id ? "Saving…" : savedNotes === e.id ? "Saved!" : "Save Notes"}
+                                    </button>
+                                  </div>
+                                </div>
+                                <textarea
+                                  value={draft}
+                                  onChange={(ev) => setDraftNotes((prev) => ({ ...prev, [e.id]: ev.target.value }))}
+                                  onKeyDown={(ev) => {
+                                    if ((ev.metaKey || ev.ctrlKey) && ev.key === "s") {
+                                      ev.preventDefault();
+                                      if (isDirty) handleSaveNotes(e.id);
+                                    }
+                                  }}
+                                  placeholder={`Add call notes, follow-up reminders, or application updates for ${e.name}…`}
+                                  rows={4}
+                                  className="w-full px-3 py-2.5 text-sm text-gray-800 border border-gray-200 rounded-lg resize-none focus:outline-none focus:border-[#0F2D5E] focus:ring-1 focus:ring-[#0F2D5E] leading-relaxed placeholder:text-gray-400"
+                                />
+                                <p className="text-xs text-gray-400 mt-1.5">Tip: press <kbd className="bg-gray-100 px-1 py-0.5 rounded text-gray-500 font-mono">⌘S</kbd> / <kbd className="bg-gray-100 px-1 py-0.5 rounded text-gray-500 font-mono">Ctrl+S</kbd> to save quickly</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        </>);
+                      })}
                     </tbody>
                   </table>
                 </div>
