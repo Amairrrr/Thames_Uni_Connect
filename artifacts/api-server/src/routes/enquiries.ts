@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { z } from "zod";
 import { db, enquiriesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { sendNewEnquiryNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -32,6 +33,17 @@ router.post("/enquiries", async (req, res): Promise<void> => {
       .returning();
     req.log.info({ enquiryId: enquiry.id }, "Enquiry submitted");
     res.status(201).json(enquiry);
+
+    // Fire-and-forget email — don't block the response
+    sendNewEnquiryNotification({
+      name: enquiry.name,
+      email: enquiry.email,
+      phone: enquiry.phone,
+      country: enquiry.country,
+      destination: enquiry.destination,
+      course: enquiry.course,
+      submittedAt: enquiry.submittedAt,
+    }).catch(() => {});
   } catch (err: any) {
     req.log.error({ err }, "Failed to save enquiry");
     res.status(500).json({ error: "Failed to save enquiry" });
