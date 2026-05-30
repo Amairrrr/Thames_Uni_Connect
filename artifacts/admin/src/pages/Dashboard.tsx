@@ -3,6 +3,7 @@ import {
   fetchStats, fetchStudents, fetchEnquiries, updateEnquiryStatus,
   type Stats, type Student, type Enquiry,
 } from "@/lib/api";
+import ContactModal from "@/components/ContactModal";
 
 const STATUS_OPTIONS = ["pending", "contacted", "in_progress", "completed"] as const;
 type Status = typeof STATUS_OPTIONS[number];
@@ -75,6 +76,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [updating, setUpdating] = useState<number | null>(null);
+  const [contactEnquiry, setContactEnquiry] = useState<Enquiry | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -335,6 +337,7 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
                         <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500">Course</th>
                         <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
                         <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500">Submitted</th>
+                        <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -371,6 +374,15 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
                             </select>
                           </td>
                           <td className="px-5 py-4 text-gray-400 text-xs">{fmt(e.submittedAt)}</td>
+                          <td className="px-5 py-4">
+                            <button
+                              onClick={() => setContactEnquiry(e)}
+                              className="flex items-center gap-1.5 text-xs font-semibold text-[#0F2D5E] hover:text-white bg-blue-50 hover:bg-[#0F2D5E] px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+                              Contact
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -381,6 +393,13 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
           </div>
         )}
       </main>
+
+      {contactEnquiry && (
+        <ContactModal
+          enquiry={contactEnquiry}
+          onClose={() => setContactEnquiry(null)}
+        />
+      )}
     </div>
   );
 }

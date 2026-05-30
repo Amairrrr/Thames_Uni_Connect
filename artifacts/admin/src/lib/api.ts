@@ -64,6 +64,21 @@ export async function updateEnquiryStatus(id: number, status: string): Promise<E
   });
 }
 
+export async function sendContactEmail({
+  toEmail,
+  toName,
+  message,
+}: {
+  toEmail: string;
+  toName: string;
+  message: string;
+}): Promise<void> {
+  await apiFetch("/api/admin/send-email", {
+    method: "POST",
+    body: JSON.stringify({ toEmail, toName, message }),
+  });
+}
+
 export async function verifyAdminKey(key: string): Promise<boolean> {
   try {
     const res = await fetch("/api/admin/stats", {
