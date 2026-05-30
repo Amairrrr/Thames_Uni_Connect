@@ -41,6 +41,7 @@ export type Enquiry = {
   destination: string;
   course: string;
   status: string;
+  notes: string;
   submittedAt: string;
   updatedAt: string;
 };
@@ -61,6 +62,13 @@ export async function updateEnquiryStatus(id: number, status: string): Promise<E
   return apiFetch(`/api/enquiries/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
+  });
+}
+
+export async function updateEnquiryNotes(id: number, notes: string): Promise<Enquiry> {
+  return apiFetch(`/api/enquiries/${id}/notes`, {
+    method: "PATCH",
+    body: JSON.stringify({ notes }),
   });
 }
 

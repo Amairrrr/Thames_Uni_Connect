@@ -11,6 +11,7 @@ export const enquiriesTable = pgTable("tuc_enquiries", {
   destination: text("destination").notNull(),
   course: text("course").notNull(),
   status: text("status").notNull().default("pending"),
+  notes: text("notes").notNull().default(""),
   submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  fetchStats, fetchStudents, fetchEnquiries, updateEnquiryStatus,
+  fetchStats, fetchStudents, fetchEnquiries, updateEnquiryStatus, updateEnquiryNotes,
   type Stats, type Student, type Enquiry,
 } from "@/lib/api";
 import ContactModal from "@/components/ContactModal";
@@ -77,6 +77,10 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [updating, setUpdating] = useState<number | null>(null);
   const [contactEnquiry, setContactEnquiry] = useState<Enquiry | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [draftNotes, setDraftNotes] = useState<Record<number, string>>({});
+  const [savingNotes, setSavingNotes] = useState<number | null>(null);
+  const [savedNotes, setSavedNotes] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,6 +98,21 @@ export default function Dashboard({ onLogout }: { onLogout: () => void }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleSaveNotes = async (id: number) => {
+    const notes = draftNotes[id] ?? "";
+    setSavingNotes(id);
+    try {
+      const updated = await updateEnquiryNotes(id, notes);
+      setEnquiries((prev) => prev.map((e) => (e.id === id ? updated : e)));
+      setSavedNotes(id);
+      setTimeout(() => setSavedNotes((s) => (s === id ? null : s)), 2500);
+    } catch {
+      // ignore
+    } finally {
+      setSavingNotes(null);
+    }
+  };
 
   const handleStatusChange = async (id: number, status: string) => {
     setUpdating(id);

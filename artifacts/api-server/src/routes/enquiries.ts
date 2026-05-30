@@ -19,6 +19,10 @@ const UpdateStatusBody = z.object({
   status: z.enum(["pending", "contacted", "in_progress", "completed"]),
 });
 
+const UpdateNotesBody = z.object({
+  notes: z.string(),
+});
+
 router.post("/enquiries", async (req, res): Promise<void> => {
   const parsed = CreateEnquiryBody.safeParse(req.body);
   if (!parsed.success) {
@@ -81,6 +85,41 @@ router.patch("/enquiries/:id/status", async (req, res): Promise<void> => {
     return;
   }
 
+  res.json(updated);
+});
+
+router.patch("/enquiries/:id/notes", async (req, res): Promise<void> => {
+  const adminKey = req.headers["x-admin-key"];
+  if (adminKey !== process.env["ADMIN_PASSWORD"]) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(rawId, 10);
+  if (Number.isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const parsed = UpdateNotesBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid notes" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(enquiriesTable)
+    .set({ notes: parsed.data.notes })
+    .where(eq(enquiriesTable.id, id))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Enquiry not found" });
+    return;
+  }
+
+  req.log.info({ enquiryId: id }, "Notes updated");
   res.json(updated);
 });
 
