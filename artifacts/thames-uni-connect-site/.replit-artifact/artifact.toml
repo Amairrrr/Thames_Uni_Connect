@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/website/"
+title = "Thames Uni Connect Website"
+description = "A self-contained static public website for Thames Uni Connect with responsive pages, course and university discovery, services, enquiry forms, and direct WhatsApp and email contact links."
+version = "1.0.0"
+id = "artifacts/thames-uni-connect-site"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/website/" ]
+localPort = 24377
+
+[services.development]
+run = "pnpm --filter @workspace/thames-uni-connect-site run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/thames-uni-connect-site", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/thames-uni-connect-site/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24377"
+BASE_PATH = "/website/"
